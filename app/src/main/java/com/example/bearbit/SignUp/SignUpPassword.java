@@ -16,9 +16,9 @@ public class SignUpPassword extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.signup_password_fragment_layout);
+        setContentView(R.layout.acitivity_register_screen);
 
-        nextButton = findViewById(R.id.signInPasswordNextButton);
+        nextButton = findViewById(R.id.facebookButton);
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override

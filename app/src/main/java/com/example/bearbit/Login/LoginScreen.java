@@ -16,27 +16,13 @@ public class LoginScreen extends AppCompatActivity {
 
     private static final String TAG = "LoginScreen";
 
-
-
-    private Button signUpButton1;
     private Button loginButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        signUpButton1 = (Button) findViewById(R.id.signUpButton);
-
-        signUpButton1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(LoginScreen.this, SignUpName.class);
-                LoginScreen.this.startActivity(intent);
-
-            }
-        });
 
         loginButton = findViewById(R.id.loginButton);
 
@@ -47,7 +33,6 @@ public class LoginScreen extends AppCompatActivity {
                 LoginScreen.this.startActivity(intent);
             }
         });
-
 
 
     }

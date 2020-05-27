@@ -19,7 +19,7 @@ public class SignUpName extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.signup_name_fragment_layout);
+        setContentView(R.layout.acitivity_register_screen);
 
         nextButton = findViewById(R.id.signInNameNextButton);
         nextButton.setOnClickListener(new View.OnClickListener() {

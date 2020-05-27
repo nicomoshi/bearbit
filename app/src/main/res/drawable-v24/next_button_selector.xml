@@ -3,6 +3,6 @@
     <item android:state_pressed="true"
         android:drawable="@drawable/next_button_pressed" /> <!-- pressed -->
     <item android:state_focused="true"
-        android:drawable="@drawable/next_button" /> <!-- focused -->
-    <item android:drawable="@drawable/next_button" /> <!-- default -->
+        android:drawable="@drawable/next_button_unpressed" /> <!-- focused -->
+    <item android:drawable="@drawable/next_button_unpressed" /> <!-- default -->
 </selector>

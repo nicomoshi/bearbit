@@ -16,9 +16,9 @@ public class SignUpEmail extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.signup_email_fragment_layout);
+        setContentView(R.layout.acitivity_register_screen);
 
-        nextButton = findViewById(R.id.signInEmailNextButton);
+        nextButton = findViewById(R.id.facebookButton);
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
