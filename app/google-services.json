@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1047922625264",
+    "firebase_url": "https://bearbit.firebaseio.com",
+    "project_id": "bearbit",
+    "storage_bucket": "bearbit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1047922625264:android:585512b0d262e2e047d035",
+        "android_client_info": {
+          "package_name": "com.rodolfo.bearbit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1047922625264-l439sheteog38i8sbkb0b6skudkmbuih.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwJBEBJfwhzeojXl2zw4z0A6qc3TMV5Y4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1047922625264-l439sheteog38i8sbkb0b6skudkmbuih.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

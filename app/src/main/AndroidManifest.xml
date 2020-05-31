@@ -14,11 +14,8 @@
         <activity
             android:name=".Main.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".SignUp.SignUpName" />
-        <activity android:name=".SignUp.SignUpEmail" />
-        <activity android:name=".SignUp.SignUpPassword" />
-        <activity android:name=".SignUp.SignUpAge" />
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Register.Register" />
         <activity android:name=".Login.LoginScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

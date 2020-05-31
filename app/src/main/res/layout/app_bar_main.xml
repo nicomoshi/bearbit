@@ -47,6 +47,7 @@
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="114dp"
         android:layout_height="76dp"
+        android:layout_gravity="bottom|center"
         android:layout_marginStart="140dp"
         android:layout_marginLeft="140dp"
         android:layout_marginEnd="140dp"
@@ -54,7 +55,6 @@
         android:background="@drawable/add_button_selector"
         android:textColor="@color/colorPrimary"
         android:textSize="50sp"
-        android:layout_gravity="bottom|end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
