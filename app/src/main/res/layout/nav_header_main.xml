@@ -16,29 +16,30 @@
         android:id="@+id/navigation_drawer_user_icon"
         android:layout_width="150dp"
         android:layout_height="100dp"
+        android:layout_gravity="center"
         android:layout_marginTop="30dp"
         android:contentDescription="@string/nav_header_desc"
-        android:layout_gravity="center"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         app:srcCompat="@drawable/logo" />
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:contentDescription="@string/nav_header_desc"
+    <com.example.bearbit.CircularImageView
+        android:id="@+id/userImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_gravity="center"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
-        app:srcCompat="@drawable/navigation_drawer_user_icon" />
+        android:layout_marginTop="30dp"
+        android:src="@drawable/navigation_drawer_user_icon" />
 
     <TextView
+        android:id="@+id/userNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/tajawal_regular"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="@string/nav_header_title"
         android:textAlignment="center"
         android:textColor="@android:color/darker_gray"
-        android:fontFamily="@font/tajawal_regular" />
+        android:gravity="center_horizontal" />
 
     <TextView
         android:id="@+id/textView"
@@ -47,6 +48,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/darker_gray"
         android:textAlignment="center"
-        android:text="@string/nav_header_subtitle" />
+        android:text="@string/nav_header_subtitle"
+        android:gravity="center_horizontal" />
 
 </LinearLayout>

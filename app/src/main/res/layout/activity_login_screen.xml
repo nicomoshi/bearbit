@@ -8,10 +8,10 @@
     tools:ignore="LabelFor" >
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/userImage"
         android:layout_width="136dp"
         android:layout_height="218dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="50dp"
         android:contentDescription="pa"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
         android:layout_marginLeft="40dp"
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="50dp"
         android:background="@drawable/edit_text"
         android:ems="10"
         android:gravity="center"
@@ -58,7 +58,7 @@
         android:textSize="18sp"
         android:typeface="normal"
         app:fontFamily="@font/tajawal_light"
-        app:layout_constraintBottom_toTopOf="@+id/facebookButton"
+        app:layout_constraintBottom_toTopOf="@+id/googleButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -80,22 +80,11 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/facebookButton"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="220sp"
-        android:layout_height="35sp"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/facebook_button_selector"
-        app:layout_constraintBottom_toTopOf="@+id/googleButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/googleButton"
         style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="210sp"
-        android:layout_height="35sp"
-        android:layout_marginBottom="20dp"
+        android:layout_width="240sp"
+        android:layout_height="52sp"
+        android:layout_marginBottom="30dp"
         android:background="@drawable/google_button_selector"
         app:layout_constraintBottom_toTopOf="@+id/registerNameTextView"
         app:layout_constraintEnd_toEndOf="parent"

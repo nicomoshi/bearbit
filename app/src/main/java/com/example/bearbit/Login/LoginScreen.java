@@ -2,6 +2,7 @@ package com.example.bearbit.Login;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.bearbit.Main.MainActivity;
 import com.example.bearbit.R;
@@ -20,12 +22,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginScreen extends AppCompatActivity {
 
@@ -36,8 +45,6 @@ public class LoginScreen extends AppCompatActivity {
     private Button registerButton;
     private Button googleButton;
 
-
-
     // [START declare_auth]
     private FirebaseAuth mAuth;
     // [END declare_auth]
@@ -45,10 +52,21 @@ public class LoginScreen extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
 
 
-    public void checkCurrentUser() {
+    public void checkCurrentUser(Map<String, Object> userMap) {
         // [START check_current_user]
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
+            // Add user data to Database
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(mAuth.getUid())
+                    .set(userMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    System.out.println("Success Login");
+                }
+            });
+
+
             Intent intent = new Intent(LoginScreen.this, MainActivity.class);
             LoginScreen.this.startActivity(intent);
             // User is signed in
@@ -63,6 +81,9 @@ public class LoginScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
+        // No Night mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -132,7 +153,15 @@ public class LoginScreen extends AppCompatActivity {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
-                firebaseAuthWithGoogle(account.getIdToken());
+
+                FirebaseUser userAuth = mAuth.getCurrentUser();
+
+                firebaseAuthWithGoogle(account);
+
+                // Saving details in database
+
+
+
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);
@@ -145,11 +174,11 @@ public class LoginScreen extends AppCompatActivity {
     // [END onactivityresult]
 
     // [START auth_with_google]
-    private void firebaseAuthWithGoogle(String idToken) {
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount account) {
         // [START_EXCLUDE silent]
         //showProgressBar();
         // [END_EXCLUDE]
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -158,7 +187,13 @@ public class LoginScreen extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            checkCurrentUser();
+                            Map<String, Object> userMap = new HashMap<>();
+
+                            // Setting User Details to Database
+                            userMap.put("uid", user.getUid());
+                            userMap.put("name", account.getDisplayName());
+                            userMap.put("image", account.getPhotoUrl().toString());
+                            checkCurrentUser(userMap);
                             //updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -177,6 +212,7 @@ public class LoginScreen extends AppCompatActivity {
     // [START signin]
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 

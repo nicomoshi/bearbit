@@ -43,7 +43,7 @@
     <include layout="@layout/content_main" />
 
     <Button
-        android:id="@+id/signInNameNextButton"
+        android:id="@+id/addProductButton"
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="114dp"
         android:layout_height="76dp"

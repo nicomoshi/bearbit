@@ -1,35 +1,66 @@
 package com.example.bearbit.Main;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import com.bumptech.glide.Glide;
+import com.example.bearbit.CircularImageView;
+import com.example.bearbit.Models.Product;
+import com.example.bearbit.Models.User;
 import com.example.bearbit.R;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.SuccessContinuation;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import android.util.Log;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -39,6 +70,23 @@ public class MainActivity extends AppCompatActivity
     protected LinearLayout fullLayout;
     protected FrameLayout actContent;
 
+    public User fetchedUser = new User();
+    private Button button;
+    private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
+    private FirestoreRecyclerAdapter adapter;
+    private TextView calTextView;
+    private TextView calInfoTextView;
+    private TextView userNameTextView;
+    private CircularImageView userImage;
+    private View imageView;
+
+
+    private Button addButton;
+    private int currentCal;
+
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
 
     //vars
     private ArrayList<String> mNames = new ArrayList<>();
@@ -46,9 +94,23 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Integer> mValues = new ArrayList<>();
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        adapter.stopListening();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        currentCal = 0;
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -56,7 +118,9 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(null);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        getSupportActionBar().setTitle("Calorie Tracker");
+
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -64,57 +128,193 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        Log.d(TAG, "onCreate: started.");
+        recyclerView = findViewById(R.id.recycler_view);
+
+        linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+        fetch();
+
+        addButton = findViewById(R.id.addProductButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AddProduct.class);
+                startActivity(intent);
+            }
+        });
+
+        calTextView = findViewById(R.id.calories_textview);
+        calTextView.setText(currentCal + " kcal");
+
+        calInfoTextView = findViewById(R.id.calories_info_textview);
+        calInfoTextView.setText(1800 - currentCal + " kcal");
+
+        userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.userNameTextView);
+        userImage = navigationView.getHeaderView(0).findViewById(R.id.userImage);
 
 
+        getUser(new UserCallback() {
+            @Override
+            public void onCallback(Map<String,Object> userMap) {
+                fetchedUser.setUid(user.getUid());
+                fetchedUser.setName(userMap.get("name").toString());
+                fetchedUser.setImage(userMap.get("image").toString());
 
-        Log.d(TAG, "onCreate: started.");
+                userNameTextView.setText(fetchedUser.getName());
 
-        initItems();
+                Glide.with(userImage).load(fetchedUser.getImage()).into(userImage);
+
+            }
+        });
     }
 
-    private void initItems() {
-        Log.d(TAG, "initItems: preparing items.");
+    private void fetch() {
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(300);
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(60);
+        Query query = FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.getUid())
+                .collection("products");
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(200);
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(20);
+        FirestoreRecyclerOptions<Product> options = new FirestoreRecyclerOptions.Builder<Product>()
+                .setQuery(query, Product.class)
+                .build();
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(100);
+//        FirebaseRecyclerOptions<Model> options =
+//                new FirebaseRecyclerOptions.Builder<Model>()
+//
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(10);
+        adapter = new FirestoreRecyclerAdapter<Product, ViewHolder>(options) {
 
-        mBrands.add("GoldenVale");
-        mNames.add("Cornflakes");
-        mValues.add(20);
+            @Override
+            public void onDataChanged() {
+                System.out.println("Data Changed");
+            }
 
-        initRecyclerView();
-    }
+            @Override
+            public void onError(FirebaseFirestoreException e) {
+                System.out.println(e);
+            }
 
-    private void initRecyclerView() {
-        Log.d(TAG, "initRecyclerView: init recyclerview");
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup group, int i) {
+                // Create a new instance of the ViewHolder, in this case we are using a custom
+                // layout called R.layout.message for each item
+                View view = LayoutInflater.from(group.getContext())
+                        .inflate(R.layout.layout_listitem, group, false);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, mBrands, mNames, mValues);
+                return new ViewHolder(view);
+            }
+
+            @Override
+            public void onBindViewHolder(ViewHolder holder, final int position, final Product model) {
+                holder.setName(model.getName());
+                holder.setBrand(model.getBrand());
+                holder.setCal(model.getCal());
+                calTextView = findViewById(R.id.calories_textview);
+                currentCal += model.getCal();
+                calTextView.setText(currentCal + " kcal");
+                calInfoTextView = findViewById(R.id.calories_info_textview);
+                calInfoTextView.setText(1800 - currentCal + " kcal for goal");
+
+
+                holder.rootCardView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(MainActivity.this, ProductInfo.class);
+                        intent.putExtra("qrCode", model.getQr());
+                        intent.putExtra("parent", "main");
+                        startActivityForResult(intent, 1);
+
+                    }
+                });
+            }
+        };
         recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
+
+    public void getUser(final UserCallback myCallback) {
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        Map<String,Object> userMap = new HashMap<>();
+                        userMap = task.getResult().getData();
+                        myCallback.onCallback(userMap);
+                    }
+                });
+
+    }
+
+    public interface UserCallback {
+        void onCallback(Map<String,Object>  userMap);
+    }
+
+
+
+
+
+
+//    private void initItems() {
+//        Log.d(TAG, "initItems: preparing items.");
+//
+//        final List<Map<String,Object>> userProducts = new ArrayList<Map<String,Object>>();
+//
+//        // Get items from database
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        db.collection("users")
+//                .document(user.getUid())
+//                .collection("products")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            if (task.isSuccessful()) {
+//                                for (QueryDocumentSnapshot document : task.getResult()) {
+//                                    userProducts.add(document.getData());
+//                                }
+//                            } else {
+//                                Log.w(TAG, "Error getting documents.", task.getException());
+//                            }
+//                        }
+//                });
+//
+//
+//         // Get Products Info
+//         for (Map<String, Object> product : userProducts){
+//             db.collection("products")
+//                     .whereEqualTo("qr", product.containsKey("qr"))
+//                     .get()
+//                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                         @Override
+//                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                             if (task.isSuccessful()) {
+//                                 for (QueryDocumentSnapshot document : task.getResult()) {
+//                                     Map<String, Object> product = new HashMap<>();
+//                                     product = document.getData();
+//
+//                                     // Add every user product to list
+//                                     mBrands.add(product.get("brand").toString());
+//                                     mNames.add(product.get("name").toString());
+//                                     mValues.add(Integer.parseInt(product.get("hundredgram").toString()));
+//
+//                                 }
+//                             } else {
+//                                 Log.w(TAG, "Error getting documents.", task.getException());
+//                             }
+//                         }
+//                     });
+//         }
+////         initRecyclerView();
+//
+//
+//    }
 
 
     @Override
@@ -163,7 +363,8 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_gallery) {
             //Todo
-            Toast.makeText(MainActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+            finish();
+            startActivity(new Intent(this, RunningTracker.class));
 
         } else if (id == R.id.nav_slideshow) {
             //Todo
@@ -176,6 +377,47 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private class ViewHolder extends RecyclerView.ViewHolder {
+        public CardView rootCardView;
+
+        public TextView nameTextView;
+        public TextView brandTextView;
+        public TextView calTextView;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            rootCardView = itemView.findViewById(R.id.item_card_view);
+            nameTextView = itemView.findViewById(R.id.todayText);
+            brandTextView = itemView.findViewById(R.id.item_brand);
+            calTextView = itemView.findViewById(R.id.item_value);
+        }
+
+        public void setName(String name) {
+            nameTextView.setText(name);
+        }
+
+        public void setBrand(String brand) {
+            brandTextView.setText(brand);
+        }
+
+        public void setCal(Long cal) {
+            String display = cal + " kcal";
+            calTextView.setText(display);
+        }
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==RESULT_OK){
+            Intent refresh = new Intent(this, MainActivity.class);
+            startActivity(refresh);
+            this.finish();
+        }
     }
 
 
