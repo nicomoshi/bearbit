@@ -145,10 +145,13 @@ public class AddProduct extends AppCompatActivity {
                 holder.rootCardView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        finish();
                         Intent intent = new Intent(AddProduct.this, ProductInfo.class);
+                        System.out.println("CODE: " + model.getQr());
                         intent.putExtra("qrCode", model.getQr());
                         intent.putExtra("parent", "add");
                         startActivity(intent);
+                        overridePendingTransition(R.anim.fadeout, R.anim.fadein);
                     }
                 });
             }
@@ -198,8 +201,10 @@ public class AddProduct extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA}, 1);
         } else {
+            finish();
             Intent intent = new Intent(this, clss);
             startActivity(intent);
+            overridePendingTransition(R.anim.fadeout, R.anim.fadein);
         }
     }
 
@@ -211,6 +216,7 @@ public class AddProduct extends AppCompatActivity {
                     if(mClss != null) {
                         Intent intent = new Intent(this, mClss);
                         startActivity(intent);
+                        overridePendingTransition(R.anim.fadeout, R.anim.fadein);
                     }
                 } else {
                     Toast.makeText(this, "Please grant camera permission to use the QR Scanner", Toast.LENGTH_SHORT).show();

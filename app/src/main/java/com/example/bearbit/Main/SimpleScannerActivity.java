@@ -63,6 +63,7 @@ public class SimpleScannerActivity extends AppCompatActivity implements ZXingSca
                 Intent intent = new Intent(SimpleScannerActivity.this, ProductInfo.class);
                 intent.putExtra("qrCode", rawResult.getText());
                 startActivity(intent);
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
             }
         }, 10);
     }

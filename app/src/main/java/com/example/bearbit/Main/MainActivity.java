@@ -1,13 +1,16 @@
 package com.example.bearbit.Main;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.bumptech.glide.Glide;
 import com.example.bearbit.CircularImageView;
+import com.example.bearbit.Login.LoginScreen;
 import com.example.bearbit.Models.Product;
 import com.example.bearbit.Models.User;
 import com.example.bearbit.R;
@@ -54,6 +57,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,6 +84,8 @@ public class MainActivity extends AppCompatActivity
     private TextView userNameTextView;
     private CircularImageView userImage;
     private View imageView;
+    private LinearLayout colorTag;
+
 
 
     private Button addButton;
@@ -96,6 +102,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        currentCal = 0;
         adapter.startListening();
     }
 
@@ -128,6 +135,13 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
+        //Location Permissions
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        }
+
         recyclerView = findViewById(R.id.recycler_view);
 
         linearLayoutManager = new LinearLayoutManager(this);
@@ -153,7 +167,7 @@ public class MainActivity extends AppCompatActivity
         userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.userNameTextView);
         userImage = navigationView.getHeaderView(0).findViewById(R.id.userImage);
 
-
+        // Get logged user data
         getUser(new UserCallback() {
             @Override
             public void onCallback(Map<String,Object> userMap) {
@@ -167,11 +181,11 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+
     }
 
+    // Ger User Products and use FirebaseRecyclerView to display
     private void fetch() {
-
-
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(user.getUid())
@@ -181,10 +195,6 @@ public class MainActivity extends AppCompatActivity
         FirestoreRecyclerOptions<Product> options = new FirestoreRecyclerOptions.Builder<Product>()
                 .setQuery(query, Product.class)
                 .build();
-
-//        FirebaseRecyclerOptions<Model> options =
-//                new FirebaseRecyclerOptions.Builder<Model>()
-//
 
         adapter = new FirestoreRecyclerAdapter<Product, ViewHolder>(options) {
 
@@ -213,11 +223,24 @@ public class MainActivity extends AppCompatActivity
                 holder.setName(model.getName());
                 holder.setBrand(model.getBrand());
                 holder.setCal(model.getCal());
+
                 calTextView = findViewById(R.id.calories_textview);
+                colorTag = holder.itemView.findViewById(R.id.colorTag);
                 currentCal += model.getCal();
                 calTextView.setText(currentCal + " kcal");
                 calInfoTextView = findViewById(R.id.calories_info_textview);
                 calInfoTextView.setText(1800 - currentCal + " kcal for goal");
+
+                if (currentCal >= 0 && currentCal < 100) {
+                    colorTag.setBackgroundResource(R.drawable.green_colored_label);
+                }
+                else if (currentCal >= 100 && currentCal < 300) {
+                    colorTag.setBackgroundResource(R.drawable.yellow_colored_label);
+                }
+                else
+                {
+                    colorTag.setBackgroundResource(R.drawable.red_colored_label);
+                }
 
 
                 holder.rootCardView.setOnClickListener(new View.OnClickListener() {
@@ -255,66 +278,6 @@ public class MainActivity extends AppCompatActivity
     public interface UserCallback {
         void onCallback(Map<String,Object>  userMap);
     }
-
-
-
-
-
-
-//    private void initItems() {
-//        Log.d(TAG, "initItems: preparing items.");
-//
-//        final List<Map<String,Object>> userProducts = new ArrayList<Map<String,Object>>();
-//
-//        // Get items from database
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        db.collection("users")
-//                .document(user.getUid())
-//                .collection("products")
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            if (task.isSuccessful()) {
-//                                for (QueryDocumentSnapshot document : task.getResult()) {
-//                                    userProducts.add(document.getData());
-//                                }
-//                            } else {
-//                                Log.w(TAG, "Error getting documents.", task.getException());
-//                            }
-//                        }
-//                });
-//
-//
-//         // Get Products Info
-//         for (Map<String, Object> product : userProducts){
-//             db.collection("products")
-//                     .whereEqualTo("qr", product.containsKey("qr"))
-//                     .get()
-//                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                         @Override
-//                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                             if (task.isSuccessful()) {
-//                                 for (QueryDocumentSnapshot document : task.getResult()) {
-//                                     Map<String, Object> product = new HashMap<>();
-//                                     product = document.getData();
-//
-//                                     // Add every user product to list
-//                                     mBrands.add(product.get("brand").toString());
-//                                     mNames.add(product.get("name").toString());
-//                                     mValues.add(Integer.parseInt(product.get("hundredgram").toString()));
-//
-//                                 }
-//                             } else {
-//                                 Log.w(TAG, "Error getting documents.", task.getException());
-//                             }
-//                         }
-//                     });
-//         }
-////         initRecyclerView();
-//
-//
-//    }
 
 
     @Override
@@ -357,21 +320,24 @@ public class MainActivity extends AppCompatActivity
         Fragment fragment;
 
         if (id == R.id.nav_home) {
-            // Handle the camera action
-
-           //Todo
+            // This activity
 
         } else if (id == R.id.nav_gallery) {
-            //Todo
+            //Running Tracker
             finish();
             startActivity(new Intent(this, RunningTracker.class));
+            overridePendingTransition(R.anim.fadeout, R.anim.fadein);
 
         } else if (id == R.id.nav_slideshow) {
-            //Todo
-            Toast.makeText(MainActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+            //Not Implemented
+            Toast.makeText(MainActivity.this, "Not Implemented",Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_share) {
-            //Todo
-            Toast.makeText(MainActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+            //Logout
+            FirebaseAuth.getInstance().signOut();
+            finish();
+            startActivity(new Intent(this, LoginScreen.class));
+            overridePendingTransition(R.anim.fadeout, R.anim.fadein);
+            Toast.makeText(MainActivity.this, "Logging Out",Toast.LENGTH_SHORT).show();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -381,6 +347,7 @@ public class MainActivity extends AppCompatActivity
 
     private class ViewHolder extends RecyclerView.ViewHolder {
         public CardView rootCardView;
+        public View itemView;
 
         public TextView nameTextView;
         public TextView brandTextView;
@@ -388,6 +355,7 @@ public class MainActivity extends AppCompatActivity
 
         public ViewHolder(View itemView) {
             super(itemView);
+            this.itemView = itemView;
             rootCardView = itemView.findViewById(R.id.item_card_view);
             nameTextView = itemView.findViewById(R.id.todayText);
             brandTextView = itemView.findViewById(R.id.item_brand);
@@ -416,7 +384,9 @@ public class MainActivity extends AppCompatActivity
         if(resultCode==RESULT_OK){
             Intent refresh = new Intent(this, MainActivity.class);
             startActivity(refresh);
+            overridePendingTransition(R.anim.fadeout, R.anim.fadein);
             this.finish();
+
         }
     }
 

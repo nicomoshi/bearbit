@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.bearbit.Main.MainActivity;
@@ -44,16 +45,109 @@ public class LoginScreen extends AppCompatActivity {
     private Button loginButton;
     private Button registerButton;
     private Button googleButton;
+    private EditText emailEditText;
+    private EditText passwordEditText;
 
-    // [START declare_auth]
     private FirebaseAuth mAuth;
-    // [END declare_auth]
-
     private GoogleSignInClient mGoogleSignInClient;
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        // Check if user is logged in
+        updateUI(currentUser);
 
-    public void checkCurrentUser(Map<String, Object> userMap) {
-        // [START check_current_user]
+    }
+
+    public void updateUI(FirebaseUser user) {
+        if (user != null)
+        {
+            // Open MainActivity
+            finish();
+            Intent intent = new Intent(LoginScreen.this, MainActivity.class);
+            LoginScreen.this.startActivity(intent);
+            overridePendingTransition(R.anim.fadeout, R.anim.fadein);
+        }
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login_screen);
+
+        loginButton = findViewById(R.id.registerNextButton);
+        registerButton = findViewById(R.id.registerButton);
+        googleButton = findViewById(R.id.googleButton);
+        emailEditText = findViewById(R.id.emailEditTextLogin);
+        passwordEditText = findViewById(R.id.passwordEditTextLogin);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        mAuth = FirebaseAuth.getInstance();
+
+        // Google sign-in credentials
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = emailEditText.getText().toString().trim();
+                String password = passwordEditText.getText().toString();
+
+                // Sign in with email and password
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(LoginScreen.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    // Sign in success, update UI with the signed-in user's information
+                                    Log.d(TAG, "signInWithEmail:success");
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    finish();
+                                    updateUI(user);
+                                } else {
+                                    // If sign in fails, display a message to the user.
+                                    Log.w(TAG, "signInWithEmail:failure", task.getException());
+                                    Toast.makeText(LoginScreen.this, "Authentication failed.",
+                                            Toast.LENGTH_SHORT).show();
+                                    updateUI(null);
+                                }
+                            }
+                        });
+            }
+        });
+
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginScreen.this, Register.class);
+                LoginScreen.this.startActivity(intent);
+                overridePendingTransition(R.anim.fadeout, R.anim.fadein);
+            }
+        });
+
+
+        googleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signIn();
+            }
+        });
+
+
+
+
+    }
+
+    public void addNewUser(Map<String, Object> userMap) {
+
+        // Check if user is logged in on google callback
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Add user data to Database
@@ -65,81 +159,12 @@ public class LoginScreen extends AppCompatActivity {
                     System.out.println("Success Login");
                 }
             });
-
-
-            Intent intent = new Intent(LoginScreen.this, MainActivity.class);
-            LoginScreen.this.startActivity(intent);
+            updateUI(user);
             // User is signed in
         } else {
             // No user is signed in
         }
         // [END check_current_user]
-    }
-
-    @SuppressLint("SourceLockedOrientationActivity")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login_screen);
-
-        // No Night mode
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        // [START initialize_auth]
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
-        // [END initialize_auth]
-
-        if(getResources().getBoolean(R.bool.portrait_only)){
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-
-
-        loginButton = findViewById(R.id.registerNextButton);
-
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginScreen.this, MainActivity.class);
-                LoginScreen.this.startActivity(intent);
-            }
-        });
-
-        registerButton = findViewById(R.id.registerButton);
-
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginScreen.this, Register.class);
-                LoginScreen.this.startActivity(intent);
-            }
-        });
-
-        googleButton = findViewById(R.id.googleButton);
-
-        googleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signIn();
-            }
-        });
-
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        //updateUI(currentUser);
     }
 
     @Override
@@ -153,14 +178,8 @@ public class LoginScreen extends AppCompatActivity {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
-
                 FirebaseUser userAuth = mAuth.getCurrentUser();
-
                 firebaseAuthWithGoogle(account);
-
-                // Saving details in database
-
-
 
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
@@ -171,13 +190,9 @@ public class LoginScreen extends AppCompatActivity {
             }
         }
     }
-    // [END onactivityresult]
 
-    // [START auth_with_google]
+    // Firebase Authenticate with Google sign--in
     private void firebaseAuthWithGoogle(final GoogleSignInAccount account) {
-        // [START_EXCLUDE silent]
-        //showProgressBar();
-        // [END_EXCLUDE]
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -188,32 +203,26 @@ public class LoginScreen extends AppCompatActivity {
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             Map<String, Object> userMap = new HashMap<>();
-
                             // Setting User Details to Database
                             userMap.put("uid", user.getUid());
                             userMap.put("name", account.getDisplayName());
                             userMap.put("image", account.getPhotoUrl().toString());
-                            checkCurrentUser(userMap);
-                            //updateUI(user);
+                            addNewUser(userMap);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            //Snackbar.make(mBinding.mainLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-                            //updateUI(null);
                         }
 
-                        // [START_EXCLUDE]
-                        // hideProgressBar();
-                        // [END_EXCLUDE]
                     }
                 });
     }
 
-    // [START signin]
+    // Google Sign-in
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
 
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        overridePendingTransition(R.anim.fadeout, R.anim.fadein);
     }
 
 

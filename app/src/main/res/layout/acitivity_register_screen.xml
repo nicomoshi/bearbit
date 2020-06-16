@@ -18,10 +18,11 @@
         android:layout_marginRight="40dp"
         android:autoText="false"
         android:background="@drawable/edit_text"
+        android:cursorVisible="true"
         android:ems="10"
         android:gravity="center"
         android:hint="@string/name"
-        android:inputType="text|textEmailAddress"
+        android:inputType="text"
         android:paddingTop="5sp"
         android:singleLine="true"
         android:textSize="18sp"
@@ -40,6 +41,7 @@
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
         android:background="@drawable/edit_text"
+        android:cursorVisible="true"
         android:ems="10"
         android:gravity="center"
         android:hint="@string/email"
@@ -62,86 +64,32 @@
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
         android:background="@drawable/edit_text"
+        android:cursorVisible="true"
         android:ems="10"
         android:gravity="center"
         android:hint="@string/password"
-        android:inputType="textEmailAddress|textWebPassword"
+        android:inputType="textWebPassword"
         android:paddingTop="5sp"
         android:singleLine="true"
         android:textSize="18sp"
         app:fontFamily="@font/tajawal_light"
+        app:layout_constraintBottom_toTopOf="@+id/registerNextButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerPasswordTextView" />
-
-    <EditText
-        android:id="@+id/registerDateEditText"
-        android:layout_width="68dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/edit_text"
-        android:ems="10"
-        android:gravity="center"
-        android:hint="01"
-        android:inputType="number|textEmailAddress"
-        android:paddingTop="5sp"
-        android:singleLine="true"
-        android:textSize="18sp"
-        app:fontFamily="@font/tajawal_light"
-        app:layout_constraintEnd_toStartOf="@+id/registerMonthEditText"
-        app:layout_constraintTop_toBottomOf="@+id/registerDOBTextView" />
-
-    <EditText
-        android:id="@+id/registerMonthEditText"
-        android:layout_width="68dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/edit_text"
-        android:ems="10"
-        android:gravity="center"
-        android:hint="01"
-        android:inputType="number|textEmailAddress"
-        android:paddingTop="5sp"
-        android:singleLine="true"
-        android:textSize="18sp"
-        app:fontFamily="@font/tajawal_light"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerDOBTextView" />
-
-    <EditText
-        android:id="@+id/registerYearEditText"
-        android:layout_width="80dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/edit_text"
-        android:ems="10"
-        android:gravity="center"
-        android:hint="1960"
-        android:inputType="textEmailAddress"
-        android:paddingTop="5sp"
-        android:singleLine="true"
-        android:textSize="18sp"
-        app:fontFamily="@font/tajawal_light"
-        app:layout_constraintStart_toEndOf="@+id/registerMonthEditText"
-        app:layout_constraintTop_toBottomOf="@+id/registerDOBTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/registerPasswordTextView"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/registerNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
         android:text="@string/name"
         android:textSize="18sp"
         app:fontFamily="@font/tajawal_medium"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.13" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/registerEmailTextView"
@@ -166,18 +114,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/registerEmailEditText" />
-
-    <TextView
-        android:id="@+id/registerDOBTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="@string/dob"
-        android:textSize="18sp"
-        app:fontFamily="@font/tajawal_medium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerPasswordEditText" />
 
     <Button
         android:id="@+id/registerNextButton"

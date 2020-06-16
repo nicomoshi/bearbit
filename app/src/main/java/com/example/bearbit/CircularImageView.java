@@ -44,7 +44,7 @@ public class CircularImageView extends androidx.appcompat.widget.AppCompatImageV
         paint.setAntiAlias(true);
 
         paintBorder = new Paint();
-        setBorderColor(Color.DKGRAY);
+        setBorderColor(Color.WHITE);
         paintBorder.setAntiAlias(true);
     }
 

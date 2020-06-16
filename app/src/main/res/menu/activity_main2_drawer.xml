@@ -20,7 +20,7 @@
         <menu>
             <item
                 android:id="@+id/nav_share"
-                android:title="@string/menu_account_settings" />
+                android:title="Logout" />
         </menu>
     </item>
 

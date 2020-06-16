@@ -13,13 +13,14 @@
         android:layout_height="218dp"
         android:layout_marginTop="50dp"
         android:contentDescription="pa"
+        app:layout_constraintBottom_toTopOf="@+id/emailEditTextLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo" />
 
     <EditText
-        android:id="@+id/registerNameEditText"
+        android:id="@+id/emailEditTextLogin"
         android:layout_width="match_parent"
         android:layout_height="45sp"
         android:layout_marginStart="40dp"
